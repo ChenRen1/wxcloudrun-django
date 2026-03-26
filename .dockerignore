@@ -1,5 +1,11 @@
 .git
-.dockerignore
-container.config.json
-LICENSE
-README.md
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+logs
+tools
+data/*.sqlite3
+data/*.db

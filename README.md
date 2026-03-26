@@ -1,125 +1,266 @@
-# wxcloudrun-django
-[![GitHub license](https://img.shields.io/github/license/WeixinCloud/wxcloudrun-express)](https://github.com/WeixinCloud/wxcloudrun-express)
-![GitHub package.json dependency version (prod)](https://img.shields.io/badge/python-3.7.3-green)
+# Customer Support Agent MVP
 
-微信云托管 python Django 框架模版，实现简单的计数器读写接口，使用云托管 MySQL 读写、记录计数值。
+一个最小可运行的智能客服 MVP，包含：
 
-![](https://qcloudimg.tencent-cloud.cn/raw/be22992d297d1b9a1a5365e606276781.png)
+- 知识库文档录入与全文检索
+- 会话创建与消息收发
+- 基于知识库的客服回答
+- 可选 OpenAI 增强回答
 
+## 微信客服最小测试模块
 
-## 快速开始
-前往 [微信云托管快速开始页面](https://developers.weixin.qq.com/miniprogram/dev/wxcloudrun/src/basic/guide.html)，选择相应语言的模板，根据引导完成部署。
+新增了一个最小化的企业微信客服测试服务，覆盖：
 
-## 本地调试
-下载代码在本地调试，请参考[微信云托管本地调试指南](https://developers.weixin.qq.com/miniprogram/dev/wxcloudrun/src/guide/debug/)
+- 创建客服帐号
+- 接收并解密微信客服回调
+- 使用 `sync_msg` 拉取消息
+- 发送文本消息
 
-## 实时开发
-代码变动时，不需要重新构建和启动容器，即可查看变动后的效果。请参考[微信云托管实时开发指南](https://developers.weixin.qq.com/miniprogram/dev/wxcloudrun/src/guide/debug/dev.html)
+微信通信代码已集中到：
 
-## Dockerfile最佳实践
-请参考[如何提高项目构建效率](https://developers.weixin.qq.com/miniprogram/dev/wxcloudrun/src/scene/build/speed.html)
+- `app/src/wecom/client.py`
+- `app/src/wecom/demo_app.py`
 
+启动方式：
 
-## 目录结构说明
-~~~
-.
-├── Dockerfile                  dockerfile
-├── README.md                   README.md文件
-├── container.config.json       模板部署「服务设置」初始化配置（二开请忽略）
-├── manage.py                   django项目管理文件 与项目进行交互的命令行工具集的入口
-├── requirements.txt            依赖包文件
-└── wxcloudrun                  app目录
-    ├── __init__.py             python项目必带  模块化思想
-    ├── apps.py                 自动生成文件apps.py
-    ├── asgi.py                 自动生成文件asgi.py, 异步服务网关接口
-    ├── migrations              数据移植（迁移）模块
-    ├── models.py               数据模块
-    ├── settings.py             项目的总配置文件  里面包含数据库 web应用 日志等各种配置
-    ├── templates               模版目录,包含主页index.html文件
-    ├── urls.py                 URL配置文件  Django项目中所有地址中（页面）都需要我们自己去配置其URL
-    ├── views.py                执行响应的代码所在模块  代码逻辑处理主要地点  项目大部分代码在此编写
-    └── wsgi.py                 自动生成文件wsgi.py, Web服务网关接口
-~~~
-
-
-## 服务 API 文档
-
-### `GET /api/count`
-
-获取当前计数
-
-#### 请求参数
-
-无
-
-#### 响应结果
-
-- `code`：错误码
-- `data`：当前计数值
-
-##### 响应结果示例
-
-```json
-{
-  "code": 0,
-  "data": 42
-}
+```bash
+source .venv/bin/activate
+pip install -r requirements.txt
+./scripts/run_wecom_kf_demo.sh
 ```
 
-#### 调用示例
+默认监听 `http://127.0.0.1:8010`。
 
-```
-curl https://<云托管服务域名>/api/count
-```
+需要配置的环境变量：
 
-
-
-### `POST /api/count`
-
-更新计数，自增或者清零
-
-#### 请求参数
-
-- `action`：`string` 类型，枚举值
-  - 等于 `"inc"` 时，表示计数加一
-  - 等于 `"clear"` 时，表示计数重置（清零）
-
-##### 请求参数示例
-
-```
-{
-  "action": "inc"
-}
+```bash
+export WECOM_CORP_ID=wwxxxx
+export WECOM_KF_SECRET=xxxx
+export WECOM_CALLBACK_TOKEN=xxxx
+export WECOM_CALLBACK_AES_KEY=xxxx
+export WECOM_CALLBACK_RECEIVE_ID=wwxxxx
+export WECOM_AUTO_REPLY_ENABLED=true
 ```
 
-#### 响应结果
+最常用的测试接口：
 
-- `code`：错误码
-- `data`：当前计数值
+```bash
+# 1. 创建客服帐号
+curl -X POST http://127.0.0.1:8010/wecom/kf/accounts \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "测试客服",
+    "media_id": "MEDIA_ID"
+  }'
 
-##### 响应结果示例
+# 2. 查看最近收到的回调
+curl http://127.0.0.1:8010/wecom/kf/callbacks
 
-```json
-{
-  "code": 0,
-  "data": 42
-}
+# 3. 用回调里拿到的 token/open_kfid 主动拉消息
+curl -X POST http://127.0.0.1:8010/wecom/kf/messages/sync-latest
+
+# 4. 发送文本消息
+curl -X POST http://127.0.0.1:8010/wecom/kf/messages/send-text \
+  -H "Content-Type: application/json" \
+  -d '{
+    "touser": "EXTERNAL_USERID",
+    "open_kfid": "OPEN_KFID",
+    "content": "你好，这是一条测试消息"
+  }'
+
+# 5. 用最近一次回调自动拉消息并回复
+curl -X POST http://127.0.0.1:8010/wecom/kf/messages/auto-reply-latest
 ```
 
-#### 调用示例
+自动回复说明：
 
+- 当 `WECOM_AUTO_REPLY_ENABLED=true` 时，收到 `POST /wecom/kf/callback` 的 `kf_msg_or_event` 回调后，服务会自动调用 `sync_msg`
+- 仅处理未处理过的文本消息，按 `msgid` 做内存去重
+- 收到的文本会进入现有 LangGraph 智能体，再通过 `send_msg` 回发给客户
+- 当前版本不会处理图片、语音等非文本消息
+
+## Django 与微信云托管
+
+当前项目已经整合到微信云托管 Django 模板，主要入口在：
+
+- `manage.py`
+- `wxcloudrun/settings.py`
+- `wxcloudrun/urls.py`
+- `wxcloudrun/views.py`
+
+云托管部署时会使用：
+
+- `Dockerfile`
+- `container.config.json`
+- `scripts/start_wxcloudrun.sh`
+
+其中启动脚本会先执行 `python manage.py migrate --noinput`，再启动 Django 服务。
+
+### 本地启动 Django
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver 127.0.0.1:8020
 ```
-curl -X POST -H 'content-type: application/json' -d '{"action": "inc"}' https://<云托管服务域名>/api/count
+
+常用接口：
+
+```bash
+curl http://127.0.0.1:8020/health
+
+curl -X POST http://127.0.0.1:8020/api/agent/answer \
+  -H "Content-Type: application/json" \
+  -d '{
+    "conversation_id": "demo",
+    "content": "25考情汇总"
+  }'
 ```
 
-## 使用注意
-如果不是通过微信云托管控制台部署模板代码，而是自行复制/下载模板代码后，手动新建一个服务并部署，需要在「服务设置」中补全以下环境变量，才可正常使用，否则会引发无法连接数据库，进而导致部署失败。
-- MYSQL_ADDRESS
-- MYSQL_PASSWORD
-- MYSQL_USERNAME
-以上三个变量的值请按实际情况填写。如果使用云托管内MySQL，可以在控制台MySQL页面获取相关信息。
+### 微信云托管部署说明
 
+1. 把代码仓库连接到微信云托管服务。
+2. 使用项目根目录下的 `Dockerfile` 构建镜像。
+3. 服务端口配置为 `80`。
+4. 在云托管控制台补齐环境变量，示例可直接参考项目根目录 `.env.example`。
 
-## License
+建议必填项：
 
-[MIT](./LICENSE)
+```bash
+DJANGO_SECRET_KEY=替换成一段随机字符串
+DJANGO_DEBUG=false
+
+MYSQL_ADDRESS=云托管MySQL地址:端口
+MYSQL_USERNAME=云托管MySQL用户名
+MYSQL_PASSWORD=云托管MySQL密码
+MYSQL_DATABASE=agent_kf
+
+WECOM_CORP_ID=企业ID
+WECOM_KF_SECRET=微信客服Secret
+WECOM_CALLBACK_TOKEN=回调Token
+WECOM_CALLBACK_AES_KEY=回调EncodingAESKey
+WECOM_CALLBACK_RECEIVE_ID=企业ID
+WECOM_AUTO_REPLY_ENABLED=true
+```
+
+变量来源：
+
+- `DJANGO_SECRET_KEY`
+  自己生成一段随机字符串即可
+- `MYSQL_*`
+  来自微信云托管控制台里的 MySQL 实例
+- `WECOM_CORP_ID`
+  企业微信企业 ID
+- `WECOM_KF_SECRET`
+  企业微信客服 API 的 Secret
+- `WECOM_CALLBACK_TOKEN`
+  企业微信回调配置页里自定义填写
+- `WECOM_CALLBACK_AES_KEY`
+  企业微信回调配置页里生成的 43 位密钥
+- `WECOM_CALLBACK_RECEIVE_ID`
+  通常直接填企业 ID
+
+部署后建议按这个顺序验收：
+
+1. `GET /health`
+2. `POST /api/agent/answer`
+3. `GET /wecom/kf/callback` 回调地址校验
+4. 企业微信实际发一条消息，验证自动回复
+
+## 原 FastAPI 本地调试方式
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+服务默认监听 `http://127.0.0.1:8000`。
+
+## 环境变量
+
+可选配置：
+
+```bash
+export OPENAI_API_KEY=your_key
+export OPENAI_MODEL=gpt-4.1-mini
+export OPENAI_BASE_URL=https://api.openai.com/v1
+export APP_DB_PATH=./data/support_agent.db
+export APP_TOP_K=4
+```
+
+如果未配置 `OPENAI_API_KEY`，系统会退化为“基于知识片段拼接”的本地回答模式，方便先验证接口与流程。
+
+如果使用 Qwen 的 OpenAI 兼容接口，可设置为：
+
+```bash
+export OPENAI_API_KEY=你的百炼Key
+export OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+export OPENAI_MODEL=qwen-plus
+```
+
+## API
+
+### 1. 创建会话
+
+```bash
+curl -X POST http://127.0.0.1:8000/conversations
+```
+
+### 2. 写入知识库
+
+```bash
+curl -X POST http://127.0.0.1:8000/kb/documents \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "退款规则",
+    "source": "help-center/refund",
+    "content": "用户在支付后7天内可以申请退款，虚拟商品一经发货不支持退款。"
+  }'
+```
+
+### 3. 发送消息
+
+```bash
+curl -X POST http://127.0.0.1:8000/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "conversation_id": "替换成上一步返回的ID",
+    "content": "订单付款之后多久可以退款？"
+  }'
+```
+
+### 4. 拉取消息
+
+```bash
+curl http://127.0.0.1:8000/messages/替换成会话ID
+```
+
+### 5. 搜索知识库
+
+```bash
+curl "http://127.0.0.1:8000/kb/search?q=退款"
+```
+
+## 设计说明
+
+- 数据存储：SQLite
+- 检索：SQLite FTS5 + bm25 排序
+- 并发：FastAPI 异步接口，单机 MVP 可支撑一定并发
+- 系统提示词：`app/prompts/role_prompt.md`
+- LangGraph 服务入口：`app/src/langgraph_service.py`
+- 回复策略：
+  - 优先检索知识库
+  - 有 OpenAI Key 时调用模型生成回复
+  - 无 Key 时返回本地规则化回答
+
+## 下一步可扩展
+
+- 接入向量库与 embedding 检索
+- 加入 Redis 会话缓存
+- 增加人工转接与工单系统
+- 做消息流式输出
+- 接入企业微信、飞书、WebSocket

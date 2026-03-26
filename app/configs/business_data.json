@@ -1,0 +1,22 @@
+{
+  "albums": {
+    "summary": {
+      "title": "25 考情分析汇总专辑",
+      "source": "wechat-album",
+      "url": "https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA4OTE4MjIwMA==&action=getalbum&album_id=3964519781729779718&scene=126&sessionid=1769588695650#wechat_redirect"
+    },
+    "experience": [
+      {
+        "title": "计算机考研经验文章专辑 1",
+        "source": "wechat-album",
+        "url": "https://mp.weixin.qq.com/mp/appmsgalbum?__biz=Mzg5MTY5NDUwMQ==&action=getalbum&album_id=2730888343223287811&scene=1&sessionid=1769588322848#wechat_redirect"
+      },
+      {
+        "title": "计算机考研经验文章专辑 2",
+        "source": "wechat-album",
+        "url": "https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzA4OTE4MjIwMA==&action=getalbum&album_id=2461714910775689218&scene=1&sessionid=1769588345333#wechat_redirect"
+      }
+    ]
+  },
+  "school_articles": []
+}

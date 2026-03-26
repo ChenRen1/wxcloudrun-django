@@ -1,0 +1,8 @@
+{
+  "keywords": {
+    "summary": ["考情汇总", "总表", "全部考情", "整体情况", "25考情汇总", "25考情分析"],
+    "experience": ["考研经验", "上岸经验", "备考经验", "复习经验", "经验分享"],
+    "analysis": ["考情分析", "报录比", "分析资料"]
+  },
+  "fallback_message": "抱歉，智能体目前仅支持【历年考情分析文章 / 考研经验文章】的精确查询。\n关于备考指导、代码技术问题、院校择校建议或未收录的学校数据，暂时无法回答此类问题，请添加人工客服处理。\n👉 请联系客服（扫码添加）：\n![企业微信二维码](https://school-choise.oss-cn-beijing.aliyuncs.com/manual_upload/5cbf1b72-bfae-4e86-b766-dd1472877a6f.png)\n![企业微信二维码微信](https://mmecoa.qpic.cn/sz_mmecoa_png/EEgU60pZ2FWZhGj2LqsXMXupUPRsoecyd1yO6nhzIfktJZsqyvjicMVcmDSfiaVyNqhtrYtOcxzrKX61HnLmAxPzPicfmrs1V3Wbevpoomw2Zo/0?from=appmsg&wxfrom=10012&wx_fmt=png&tp=webp&usePicPrefetch=1&watermark=1)"
+}
